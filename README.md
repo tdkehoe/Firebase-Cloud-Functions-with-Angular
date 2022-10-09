@@ -88,9 +88,6 @@ const app = initializeApp(firebaseConfig);
 
 We'll use AngularFire instead of these items. Click `Continue to console`.
 
-
-
-
 ## Set up Functions
 Open the official documentation for (Get started: write, test, and deploy your first functions)[https://firebase.google.com/docs/functions/get-started].
 
@@ -224,12 +221,15 @@ import { AngularFireFunctions } from '@angular/fire/compat/functions';
 
 @Component({
   selector: 'app-root',
-  template: `{ data$  | async }`
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  constructor(private fns: AngularFireFunctions) { 
-    const callable = fns.httpsCallable('helloWorld');
-    this.data$ = callable({ name: 'some-data' });
+  constructor(private fns: AngularFireFunctions) {}
+ 
+  callMe() {
+    console.log("Calling...");
+    this.fns.httpsCallable('helloWorld');
   }
 }
 ```
@@ -263,3 +263,7 @@ export const helloWorld = functions.https.onRequest((request, response) => {
   response.send("Hello from Firebase!");
 });
 ```
+
+## Run emulator
+
+Install
