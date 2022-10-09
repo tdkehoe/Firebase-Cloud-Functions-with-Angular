@@ -88,6 +88,84 @@ const app = initializeApp(firebaseConfig);
 
 We'll use AngularFire instead of these items. Click `Continue to console`.
 
+
+
+
+## Set up Functions
+Open the official documentation for (Get started: write, test, and deploy your first functions)[https://firebase.google.com/docs/functions/get-started].
+
+Stay in the project directory and install `firebase-tools`:
+
+```bash
+npm install -g firebase-tools
+```
+
+Install `firebase-functions` and `firebase-admin`.
+
+```bash
+npm install firebase-functions@latest firebase-admin@latest --save
+```
+
+I'm going to name my first-born child `Admin`.
+
+Run `firebase login` to log in via the browser and authenticate the firebase tool:
+
+```bash
+firebase login
+```
+
+Initialize the Firestore database:
+
+```bash
+firebase init firestore
+```
+
+You'll get a warning:
+
+```bash
+Error: It looks like you haven't used Cloud Firestore in this project before.
+```
+
+Go to your Firebase console and click on `Firestore Database`. Open a new database.
+
+Then initialize Firebase Cloud Functions:
+
+```bash
+firebase init functions
+```
+
+Choose `Initialize`, not `Overwrite`. It will then ask you to name your functions. Just call it `functions`.
+
+It will ask you to choose between `JavaScript` and `TypeScript`. This tutorial will use TypeScript.
+
+It will then ask if you want to use ESLint. I choose `no` because your functions won't deploy if ESLint finds anything to complain about, and ESLint can find a lot of unimportant things to complain about. I use Visual Studio Code to find my coding errors.
+
+Then it asks if you want to install npm dependencies. Say `yes`.
+
+Look at your directory and you should see:
+
+```bash
+myproject
+ +- .firebaserc    # Hidden file that helps you quickly switch between
+ |                 # projects with `firebase use`
+ |
+ +- firebase.json  # Describes properties for your project
+ |
+ +- functions/     # Directory containing all your functions code
+      |
+      +- node_modules/ # directory where your dependencies (declared in # package.json) are installed
+      |
+      +- package-lock.json
+      |
+      +- src/
+          |
+           +- index.js  # main source file for your Cloud Functions code
+      |
+      +- tsconfig.json  # if you chose TypeScript
+      |
+      +- package.json  # npm package file describing your Cloud Functions code
+```
+
 ## Setup `@NgModule` for the `AngularFireModule`
 
 Open the [AngularFire documentation](https://github.com/angular/angularfire) for this section.
@@ -129,8 +207,8 @@ Open `/src/app/app.component.ts` and import three AngularFire modules.
 import { Component } from '@angular/core';
 import { Firestore } from '@angular/fire/firestore';
 
-// Firebase Lite
-import { collection, addDoc } from '@firebase/firestore/lite';
+// AngularFire
+import { collection, addDoc } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-root',
@@ -138,7 +216,7 @@ import { collection, addDoc } from '@firebase/firestore/lite';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'GreatestComputerScientists';
+  title = 'FirebaseFunctionsTutorial';
 
   constructor() {}
 }
@@ -149,50 +227,42 @@ export class AppComponent {
 Now we'll make the view in `app.component.html`. Replace the placeholder view with:
 
 ```html
-<h2>Greatest Computer Scientists</h2>
-
-<h3>Create</h3>
-<form (ngSubmit)="onCreate()">
-  <input type="text" [(ngModel)]="name" name="name" placeholder="Name" required>
-  <input type="text" [(ngModel)]="born" name="born" placeholder="Year born">
-  <input type="text" [(ngModel)]="accomplishment" name="accomplishment" placeholder="Accomplishment">
-  <button type="submit" value="Submit">Submit</button>
-</form>
+<div>
+    <button mat-raised-button color="basic" (click)='callMe()'>Call me!</button>
+</div>
 ```
 
-We're using an HTML form and the Angular `FormsModule`. The form is within the `<form></form>` directive.
+We made a button that calls a handler function in theb controller.
 
-```html
-<form (ngSubmit)="onCreate()">
-</form>
-```
+## Make the handler function
 
-The parentheses around `ngSubmit` creates one-way data binding from the view `app.component.html` to the controller `app.component.ts`. When the `Submit` button is clicked the function `onCreate()` executes in `app.component.ts`. We'll make this function next.
-
-Inside the form we have three text fields and a `Submit` button. The first text field has two-way data binding (parenthesis and brackets) using `ngModel` to the variable `name` in the controller. The second and third text fields bind to the variables `born` and `accomplishment`.
-
-Clicking the button executes `ngSubmit` and the function `onCreate()`.
-
-## Add data to Firestore with `add()`
-
-Open the [Add Data](https://firebase.google.com/docs/firestore/quickstart#add_data) section of the Firestore documentation.
-
-Now we'll add a handler function to write the data to database.
+Now we'll add a handler function in the controller.
 
 ```ts
-async onCreate() {
-    try {
-      const docRef = await addDoc(collection(this.firestore, 'Scientists'), {
-        name: this.name,
-        born: this.born,
-        accomplishment: this.accomplishment
-      });
-      console.log("Document written with ID: ", docRef.id);
-    } catch (error) {
-      console.error(error);
-    }
+import { Component } from '@angular/core';
+
+// AngularFire
+import { collection, addDoc } from '@angular/fire/firestore';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  title = 'FirebaseFunctionsTutorial';
+
+  callMe() {
+    console.log("Calling...");
+    httpsCallable(getFunctions(), 'callMe');
+  }
 }
 ```
+
+
+
+
+
 
 Enter this data in the HTML form and click `Submit`:
 
