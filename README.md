@@ -1,35 +1,10 @@
-# Using Firebase with Angular and AngularFire
+# Using Firebase Cloud Functions with Angular
 
-This tutorial will make a simple Angular CRUD (CREATE, READ, UPDATE, DELETE) app that uses Google's Firebase Firestore cloud database, plus we'll make an OBSERVE to display realtime updates.
+This tutorial will make a simple Angular app that connects to Firebase Cloud Functions.
 
 This project uses Angular 14, AngularFire 7.4, and Firestore Web version 9 (modular). 
 
-Firestore Web version 9 is a big advance. Load time is reduced by as much as 80%. I like that the documentation is written with `async await` instead of promises.
-
 I assume that you know the basics of Angular (nothing advanced is required). No CSS or styling is used, to make the code easier to understand.
-
-### Collections and documents
-
-I assume that you know the [basics](https://firebase.google.com/docs/firestore) of Firebase's Firestore cloud database. In particular, this tutorial talks about `collections` and `documents`. This is essential. A `collection` is pretty much an array and a `document` is pretty much an object, just like in JavaScript. Firestore is structured with collections of documents. A document can contain a collection (a.k.a. a sub-collection), which contains further documents. This `collection`-`document`-`collection`-`document` pattern is maintained. 
-
-You'll see that some of the CRUD operations come in pairs: one for a collection and one for a document. You can READ a collection with `getDoc()` or READ a collection with `getDocs()`. You can OBSERVE a collection or OBSERVE a document. The other three CRUD operations (CREATE, UPDATE, DELETE) are only for documents. You, as admin, can CREATE and DELETE collections from the Firebase console but users can't do these operations from a web app.
-
-I expect that you'll read this tutorial with a second window open to the [Firebase documentation](https://firebase.google.com/docs/firestore) and the [AngularFire documentation](https://github.com/angular/angularfire). I'll try to let you know which page of the Firebase documentation to open for each section of this tutorial. This stuff changes, especially AngularFire. Make a pull request if something in this tutorial is out of date.
-
-Here is the data (documents) we will use:
-
-```
-Charles Babbage, born 1791: Built first computer
-Ada Lovelace, born 1815: Wrote first software
-Howard Aiken, 1900: Built IBM's Harvard Mark I electromechanical computer
-John von Neumann, born 1903: Built first general-purpose computer with memory and instructions
-Grace Hopper, born 1906: Devised the first machine-independent programming language.
-Alan Turing, born 1912: First theorized computers with memory and instructions, i.e., general-purpose computers
-Donald Knuth, born 1938: Father of algorithm analysis
-Lynn Ann Conway, born 1938: Invented generalized dynamic instruction handling
-Shafi Goldwasser, born 1958: Crypography and blockchain
-Jeff Dean, born 1968: Google's smartest computer scientist
-```
 
 ## Create a new project
 
@@ -37,13 +12,13 @@ In your terminal:
 
 ```bash
 npm install -g @angular/cli
-ng new GreatestComputerScientists
-cd GreatestComputerScientists
+ng new FirebaseFunctionsTutorial
 ```
 
 The Angular CLI's `new` command will set up the latest Angular build in a new project structure. Accept the defaults (no routing, CSS). Start the server:
 
 ```bash
+cd FirebaseFunctionsTutorial
 ng serve -o
 ```
 
@@ -57,9 +32,9 @@ Open another tab in your terminal and install AngularFire and Firebase from `npm
 ng add @angular/fire
 ```
 
-Deselect `ng deploy -- hosting` and select `Firestore`. This project won't use any other Firebase features.
+Deselect `ng deploy -- hosting` and select `Firestore` and `Cloud Functions (callable)`.
 
-It will ask you for your email address associated with your Firebase account. Then it will ask you to associate a Firebase project. Select `[CREATE NEW PROJECT]`. Call it `Greatest Computer Scientists`.
+It will ask you for your email address associated with your Firebase account. Then it will ask you to associate a Firebase project. Select `[CREATE NEW PROJECT]`. Call it `Firebase Functions Tutorial`.
 
 If this doesn't work, open your Firebase console and make a new project. Call it `Greatest Computer Scientists`. Skip the Google Analytics.
 
@@ -125,9 +100,6 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AppComponent } from './app.component';
 import { environment } from '../environments/environment'; // access firebaseConfig
 
-// Angular
-import { FormsModule } from '@angular/forms';
-
 // AngularFire
 import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
 import { provideFirestore, getFirestore } from '@angular/fire/firestore';
@@ -138,7 +110,6 @@ import { provideFirestore, getFirestore } from '@angular/fire/firestore';
   ],
   imports: [
     BrowserModule,
-    FormsModule,
     provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
     provideFirestore(() => getFirestore()),
   ],
