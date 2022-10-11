@@ -71,7 +71,9 @@ export const environment = {
 };
 ```
 
-Don't copy and paste the whole window that the Firebase console provides. Check that it looks like the above code. A `=` needs to be changed to `:` and a `;` needs to be dropped. Then check that your browser is still showing the demo app.
+This may have already been done for you. Check that it looks like the above code. 
+
+Check that your browser is still showing the demo app.
 
 `Add Firebase SDK` also tells you to do several other things:
 
@@ -88,7 +90,7 @@ const app = initializeApp(firebaseConfig);
 
 We'll use AngularFire instead of these items. Click `Continue to console`.
 
-## Set up Functions
+## Initialize Firestore
 Open the official documentation for (Get started: write, test, and deploy your first functions)[https://firebase.google.com/docs/functions/get-started].
 
 Stay in the project directory and install `firebase-tools`:
@@ -102,8 +104,6 @@ Install `firebase-functions` and `firebase-admin`.
 ```bash
 npm install firebase-functions@latest firebase-admin@latest --save
 ```
-
-I'm going to name my first-born child `Admin`.
 
 Run `firebase login` to log in via the browser and authenticate the firebase tool:
 
@@ -125,6 +125,8 @@ Error: It looks like you haven't used Cloud Firestore in this project before.
 
 Go to your Firebase console and click on `Firestore Database`. Open a new database.
 
+## Initialize Functions
+
 Then initialize Firebase Cloud Functions:
 
 ```bash
@@ -141,7 +143,7 @@ Then it asks if you want to install npm dependencies. Say `yes`.
 
 ### Fix `package.json`
 
-Open `functions/package.json` and change:
+If you chose TypeScript, open `functions/package.json` and change:
 
 ```js
 "main": "lib/index.js",
@@ -153,8 +155,10 @@ to
 "main": "src/index.ts",
 ```
 
+If you chose JavaScript skip this step.
+
 ### Directory structure
-Look at your directory and you should see:
+Look at your directory and you should see, if you chose TypeScript:
 
 ```bash
 myproject
@@ -171,12 +175,33 @@ myproject
       |
       +- src/
           |
-           +- index.js  # main source file for your Cloud Functions code
+           +- index.ts  # main source file for your Cloud Functions code
       |
       +- tsconfig.json  # if you chose TypeScript
       |
       +- package.json  # npm package file describing your Cloud Functions code
 ```
+
+JavaScript will be simpler:
+
+```bash
+myproject
+ +- .firebaserc    # Hidden file that helps you quickly switch between
+ |                 # projects with `firebase use`
+ |
+ +- firebase.json  # Describes properties for your project
+ |
+ +- functions/     # Directory containing all your functions code
+      |
+      +- node_modules/ # directory where your dependencies (declared in # package.json) are installed
+      |
+      +- package-lock.json
+      |
+      +- index.js  # main source file for your Cloud Functions code
+      |
+      +- package.json  # npm package file describing your Cloud Functions code
+```
+
 
 ## Setup `@NgModule` for the `AngularFireModule` and `AngularFireFunctionsModule`
 
@@ -185,26 +210,30 @@ Open the [AngularFire documentation](https://github.com/angular/angularfire/blob
 Open `/src/app/app.module.ts` and import modules. This is set up for using the Firebase Cloud Function emulator, not for calling a Firebase Cloud Function in the cloud. Don't deploy a Firebase Cloud Function to the cloud until you've tested it in the emulator.
 
 ```ts
-import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+
 import { AppComponent } from './app.component';
-import { AngularFireModule } from '@angular/fire/compat';
-import { AngularFireFunctionsModule, USE_EMULATOR } from '@angular/fire/compat/functions';
+import { initializeApp,provideFirebaseApp } from '@angular/fire/app';
 import { environment } from '../environments/environment';
+import { provideFirestore,getFirestore } from '@angular/fire/firestore';
+import { provideFunctions,getFunctions } from '@angular/fire/functions';
 
 @NgModule({
+  declarations: [
+    AppComponent
+  ],
   imports: [
     BrowserModule,
-    AngularFireModule.initializeApp(environment.firebase),
-    AngularFireFunctionsModule
+    provideFirebaseApp(() => initializeApp(environment.firebase)),
+    provideFirestore(() => getFirestore()),
+    provideFunctions(() => getFunctions())
   ],
-  declarations: [ AppComponent ],
-  bootstrap: [ AppComponent ],
-  providers: [
-    { provide: USE_EMULATOR, useValue: ['localhost', 5001] }
-   ]
+  providers: [],
+  bootstrap: [AppComponent]
 })
-export class AppModule {}
+export class AppModule { }
+
 ```
 
 ## Inject `AngularFireFunctions` into Component Controller
@@ -251,19 +280,17 @@ We made a button that calls a handler function in theb controller.
 Open `functions/src/index.ts`. Import two Firebase modules and uncomment the default function.
 
 ```ts
-// The Cloud Functions for Firebase SDK to create Cloud Functions and set up triggers.
-const functions = require('firebase-functions');
-
-// The Firebase Admin SDK to access Firestore.
-const admin = require('firebase-admin');
-admin.initializeApp();
-
-export const helloWorld = functions.https.onRequest((request, response) => {
-  functions.logger.info("Hello logs!", {structuredData: true});
-  response.send("Hello from Firebase!");
+exports.helloWorld = functions.https.onCall((data: any, context: any) => {
+    console.log("Hello world!")
+    console.log(data);
+    console.log(context);
 });
 ```
 
 ## Run emulator
 
-Install
+Start the Firebase Emulator.
+
+```bash
+firebase emulators:start --only functions
+```
