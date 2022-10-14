@@ -1,4 +1,4 @@
-# Using Firebase Cloud Functions with Angular
+# Using Firebase Cloud Functions with Angular and AmgularFire
 
 This tutorial will make a simple Angular app that connects to Firebase Cloud Functions.
 
@@ -399,7 +399,7 @@ firebase emulators:start --only functions
 
 Run the function `executeonPageLoad` by restarting `ng serve`. Run the function `callMe` by clicking the button in the view.
 
-You should see the results in several places. In the view, you should see `22` as the result from `executeonPageLoad`. When you click the button this result changes to `57`.
+You should see the results in several places. In the view, you should see `22` as the result from `executeonPageLoad`. When you click the button this result changes to `57`. This is an observable so if the data changes in the cloud function it'll change in the view.
 
 In the emulator logs, you should see the logs:
 
@@ -413,4 +413,14 @@ In the emulator logs, you should see the logs:
 
 You should see the same logs in the terminal emulator tab.
 
-## 
+## Calling functions via HTTP requests
+
+Firebase cloud functions can also be [called via HTTP requests](https://firebase.google.com/docs/functions/http-events?hl=en&authuser=0). This is useful for Express apps but not for Angular apps.
+
+## Triggering Firebase Cloud Functions from FireStore
+
+You can trigger a Firebase Cloud Function by writing data to Firestore. This doesn't use AngularFire for functions, i.e., only uses AngularFire for Firestore, so it doesn't matter whether you use AngularFire 6 or 7 for functions.
+
+
+
+
