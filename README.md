@@ -2,7 +2,7 @@
 
 This tutorial will make a simple Angular app that connects to Firebase Cloud Functions.
 
-This project uses Angular 14, AngularFire 7.4, and Firestore Web version 9 (modular). 
+This project uses Angular 14, AngularFire 6, and Firestore Web version 9 (modular). Why this tutorial doesn't use AngularFire 7 will be explained below.
 
 I assume that you know the basics of Angular (nothing advanced is required). No CSS or styling is used, to make the code easier to understand.
 
@@ -36,7 +36,7 @@ Deselect `ng deploy -- hosting` and select `Firestore` and `Cloud Functions (cal
 
 It will ask you for your email address associated with your Firebase account. Then it will ask you to associate a Firebase project. Select `[CREATE NEW PROJECT]`. Call it `Firebase Functions Tutorial`.
 
-If this doesn't work, open your Firebase console and make a new project. Call it `Greatest Computer Scientists`. Skip the Google Analytics.
+If this doesn't work, open your Firebase console and make a new project.
 
 Create your Firestore database.
 
@@ -44,7 +44,7 @@ Create your Firestore database.
 
 Open the Firestore [Get started](https://firebase.google.com/docs/firestore/quickstart) section.
 
-In your [Firebase Console](https://console.firebase.google.com), under `Get started by adding Firebase to your app` select the web app `</>` icon. Register your app, again calling it `Greatest Computer Scientists`. You won't need `Firebase Hosting`, we'll just run the app locally.
+In your [Firebase Console](https://console.firebase.google.com), under `Get started by adding Firebase to your app` select the web app `</>` icon. Register your app. You won't need `Firebase Hosting`, we'll just run the app locally.
 
 Under `Add Firebase SDK` select `Use npm`.
 
@@ -135,7 +135,7 @@ firebase init functions
 
 Choose `Initialize`, not `Overwrite`. It will then ask you to name your functions. Just call it `functions`.
 
-It will ask you to choose between `JavaScript` and `TypeScript`. This tutorial will use TypeScript.
+It will ask you to choose between `JavaScript` and `TypeScript`.
 
 It will then ask if you want to use ESLint. I choose `no` because your functions won't deploy if ESLint finds anything to complain about, and ESLint can find a lot of unimportant things to complain about. I use Visual Studio Code to find my coding errors.
 
@@ -157,7 +157,24 @@ to
 
 If you chose JavaScript skip this step.
 
-### Directory structure
+## Initialize emulator
+
+Firebase comes with an emulator. The emulator will simulate many Firebase services, including Firestore, Auth, etc. I've never found a need for the emulator with Firestore and Auth as these execute quickly in the cloud. 
+
+Functions are different. Without the emulator developing code can be painfully slow. Deploying your code changes to the cloud takes about two minutes. Then I test my code changes and I have to wait for the console logs. This takes a few more minutes, with clicking various buttons in the console to get the logs to stream. I've seen a lag time between deploying functions to the cloud and the new version running so this can add a minute or two. All in all, waiting five minutes between writing new code and seeing the results feels painfully slow. With the emulator there's no waiting.
+
+Another advantage of the emulator is that you screw up your code, such as writing an infinite loop, without affecting your Google Cloud Services bill. In other words, test your functions in the emulator before deploying them to the cloud.
+
+Initiate the emulators:
+
+```bash
+firebase init emulators
+npm run build
+```
+
+The latter command might ask you to update Java on your computer. 
+
+## Directory structure
 Look at your directory and you should see, if you chose TypeScript:
 
 ```bash
@@ -202,22 +219,33 @@ myproject
       +- package.json  # npm package file describing your Cloud Functions code
 ```
 
-
 ## Setup `@NgModule` for the `AngularFireModule` and `AngularFireFunctionsModule`
 
 Open the [AngularFire documentation](https://github.com/angular/angularfire/blob/master/docs/functions/functions.md) for this section.
 
-Open `/src/app/app.module.ts` and import modules. This is set up for using the Firebase Cloud Function emulator, not for calling a Firebase Cloud Function in the cloud. Don't deploy a Firebase Cloud Function to the cloud until you've tested it in the emulator.
+Now we can start writing Angular. Open `/src/app/app.module.ts` and import modules.
+
+### AngularFire 6 vs 7
+
+Here we hit a stumbling block. The official AngularFire documentation shows how to use callable functions with AngularFire 6. AngularFire 7 seems to be available for functions but there's no documentation. I asked on Stack Overflow and no one answered my question.
+
+The problem is that you can't mix AngularFire 6 and 7. I use AngularFire 7 for Firestore and Auth. This means that I can't use callable functions with Firestore or Auth. The workaround is to trigger background functions instead of calling functions directly. We'll get to triggered background functions later. First this tutorial will teach callable functions, which you can't really use in a real Angular app now. I believe that we're very close to using AngularFire 7 with callable apps and only a few lines of code will need to change so let's learn to use callable functions with Angular 6.
 
 ```ts
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-
 import { AppComponent } from './app.component';
-import { initializeApp,provideFirebaseApp } from '@angular/fire/app';
 import { environment } from '../environments/environment';
-import { provideFirestore,getFirestore } from '@angular/fire/firestore';
-import { provideFunctions,getFunctions } from '@angular/fire/functions';
+
+// AngularFire 7 -- comment out these line, we won't be using AngularFire 7
+// import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
+// import { provideFirestore, getFirestore } from '@angular/fire/firestore';
+// import { provideFunctions, getFunctions, connectFunctionsEmulator } from '@angular/fire/functions';
+
+// AngularFire 6
+import { AngularFireModule } from '@angular/fire/compat';
+import { AngularFireFunctionsModule } from '@angular/fire/compat/functions';
+import { USE_EMULATOR } from '@angular/fire/compat/functions'; // comment out to run in the cloud
 
 @NgModule({
   declarations: [
@@ -225,67 +253,141 @@ import { provideFunctions,getFunctions } from '@angular/fire/functions';
   ],
   imports: [
     BrowserModule,
-    provideFirebaseApp(() => initializeApp(environment.firebase)),
-    provideFirestore(() => getFirestore()),
-    provideFunctions(() => getFunctions())
+
+    // AngularFire 7 -- comment out these line, we won't be using AngularFire 7
+    // provideFirebaseApp(() => initializeApp(environment.firebase)),
+    // provideFirestore(() => getFirestore()),
+    // provideFunctions(() => getFunctions()),
+
+    // AngularFire 6
+    AngularFireModule.initializeApp(environment.firebase),
+    AngularFireFunctionsModule
   ],
-  providers: [],
+  providers: [
+    { provide: USE_EMULATOR, useValue: ['localhost', 5001] } // comment out to run in the cloud
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
-
 ```
+
+You can comment out the Angular 7 lines now. 
+
+We have two lines for the emulator. When you're ready to run in the cloud comment out these two lines.
 
 ## Inject `AngularFireFunctions` into Component Controller
 
 Open `/src/app/app.component.ts` and import one AngularFire module.
 
-What's going on with the template?
-
-I have no idea what the code in the constructor does.
-
-```ts
-import { Component } from '@angular/core';
-import { AngularFireFunctions } from '@angular/fire/compat/functions';
-
-@Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
-})
-export class AppComponent {
-  constructor(private fns: AngularFireFunctions) {}
- 
-  callMe() {
-    console.log("Calling...");
-    this.fns.httpsCallable('helloWorld');
-  }
-}
-```
-
 ## Make the HTML view
 
-Now we'll make the view in `app.component.html`. Replace the placeholder view with:
+Open `app.component.html`. Replace the placeholder view with:
 
 ```html
 <div>
     <button mat-raised-button color="basic" (click)='callMe()'>Call me!</button>
 </div>
+
+{{ data$ | async }}
 ```
 
-We made a button that calls a handler function in theb controller.
+We made a button that calls a handler function in theb controller. There's also a line to display data returned from the callable function.
 
-## Write your first Firebase Cloud Function
+## Make the component controller
 
-Open `functions/src/index.ts`. Import two Firebase modules and uncomment the default function.
+In `app.component.ts` 
 
 ```ts
-exports.helloWorld = functions.https.onCall((data: any, context: any) => {
-    console.log("Hello world!")
+import { Component } from '@angular/core';
+
+// AngularFire 7
+// import { getApp } from '@angular/fire/app';
+// import { provideFunctions, getFunctions, connectFunctionsEmulator, httpsCallable } from '@angular/fire/functions';
+// import { Firestore, doc, getDoc, getDocs, collection, updateDoc } from '@angular/fire/firestore';
+
+// AngularFire 6
+import { AngularFireFunctions } from '@angular/fire/compat/functions';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+})
+export class AppComponent {
+  data$: any;
+
+  constructor(private functions: AngularFireFunctions) {
+    const callable = this.functions.httpsCallable('executeOnPageLoad');
+    this.data$ = callable({ name: 'Charles Babbage' });
+  }
+
+  callMe() {
+    console.log("Calling...");
+    const callable = this.functions.httpsCallable('callMe');
+    this.data$ = callable({ name: 'Ada Lovelace' });
+  };
+}
+```
+
+Again, comment out the Angular 7 imports for now.
+
+In `AppComponent` we make a single variable `data$: any`. This will handle the data returned from the callable functions and display it in the view.
+
+In the `constructor` we make a local variable `functions` to alias `AngularFireFunctions`. This is AngularFire 6. `AngularFireFunctions` isn't on AngularFire 7. As soon as `AngularFireFunctions` (or an equivelant property) is available on AngularFire 7 we should be able to use AngularFire 7.
+
+We have two lines of code that call a cloud function to execute on page load. These use the property `httpsCallable`. This take one parameter, the name of your cloud function.
+
+To execute the callable function we use `this.data$` to handle the returned data and then call the function. Calling the function has a required parameter, which is an object holding the data you want to send to the cloud function.
+
+Lastly, the component controller has a handler function for the button in the view. This executes similar code.
+
+## Write your Firebase Cloud Functions
+
+Open `functions/src/index.ts` or `functions/index.js`. Import two Firebase modules, initialize your app, and then write your callable functions.
+
+```ts
+// The Cloud Functions for Firebase SDK to create Cloud Functions and set up triggers.
+const functions = require('firebase-functions');
+
+// The Firebase Admin SDK to access Firestore.
+const admin = require('firebase-admin');
+admin.initializeApp();
+
+// executes on page load
+exports.executeOnPageLoad = functions.https.onCall((data, context) => {
+    console.log("The page is loaded!")
     console.log(data);
-    console.log(context);
+    console.log(data.name);
+    // console.log(context);
+    return 22
+});
+
+// executes on user input
+exports.callMe = functions.https.onCall((data, context) => {
+    console.log("Thanks for calling!")
+    console.log(data);
+    console.log(data.name);
+    // console.log(context);
+    return 57
 });
 ```
+
+The function `executeOnPageLoad` executes when `ng serve` starts or restarts.
+
+The functions `callMe` executes when you click the button in the view.
+
+Each function is in the form 
+
+```js
+`functions.https.onCall((data, context) => {
+
+});
+```
+
+`https.onCall` means that this functions can be called directly from Angular. `data` is the data sent from Angular. `context` is metadata about the function's execution. We won't be using this.
+
+Each function sends a message to the console, then sends the data from Angular to the console. We've commented out displaying the `context` metadata in the console. This metadata goes on for pages and makes the logs hard to read. 
+
+Finally, each callable function returns something. 
 
 ## Run emulator
 
@@ -294,3 +396,21 @@ Start the Firebase Emulator.
 ```bash
 firebase emulators:start --only functions
 ```
+
+Run the function `executeonPageLoad` by restarting `ng serve`. Run the function `callMe` by clicking the button in the view.
+
+You should see the results in several places. In the view, you should see `22` as the result from `executeonPageLoad`. When you click the button this result changes to `57`.
+
+In the emulator logs, you should see the logs:
+
+```
+12:05:02  I function[us-central1-callMe]  Beginning execution of "callMe"
+12:05:02  I function[us-central1-callMe]  Thanks for calling!
+12:05:02  I function[us-central1-callMe]  { name: 'Ada Lovelace' }
+12:05:02  I function[us-central1-callMe]  Ada Lovelace
+12:05:02  I function[us-central1-callMe]  Finished "callMe" in 6.512202ms
+```
+
+You should see the same logs in the terminal emulator tab.
+
+## 
