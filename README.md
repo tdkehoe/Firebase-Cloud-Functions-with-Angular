@@ -29,6 +29,7 @@ Your browser should open to `localhost:4200`. You should see the Angular default
 Open another tab in your terminal and install AngularFire and Firebase from `npm`.
 
 ```bash
+npm install firebase
 ng add @angular/fire
 ```
 
@@ -36,11 +37,8 @@ Deselect `ng deploy -- hosting` and select `Firestore` and `Cloud Functions (cal
 
 It will ask you for your email address associated with your Firebase account. Then it will ask you to associate a Firebase project. Select `[CREATE NEW PROJECT]`. Call it `Firebase Functions Tutorial`.
 
-If this doesn't work, open your Firebase console and make a new project.
-
-Create your Firestore database.
-
-## Add Firebase config to `environments` variable
+## Create Firestore database and check Firebase credentials in `environments.ts`
+Open your Firebase console and look for your project. If it wasn't made for you then make a new project with a Firestore database.
 
 Open the Firestore [Get started](https://firebase.google.com/docs/firestore/quickstart) section.
 
@@ -50,13 +48,7 @@ Under `Add Firebase SDK` select `Use npm`.
 
 If you're using an existing Firestore database go to the settings gear in the Firebase console.
 
-Return to your terminal and install Firebase in your new project.
-
-```bash
-npm install firebase
-```
-
-Then copy and paste the config values provided to your `environment.ts` file:
+Open `src/environments.ts`. You should see the credentials match the credentials in your Firebase console. If not, copy and paste the credenbtials from your Firebase console to `environments.ts`.
 
 ```ts
 export const environment = {
@@ -72,8 +64,6 @@ export const environment = {
   }
 };
 ```
-
-This may have already been done for you. Check that it looks like the above code. 
 
 Check that your browser is still showing the demo app.
 
