@@ -48,6 +48,8 @@ In your [Firebase Console](https://console.firebase.google.com), under `Get star
 
 Under `Add Firebase SDK` select `Use npm`.
 
+If you're using an existing Firestore database go to the settings gear in the Firebase console.
+
 Return to your terminal and install Firebase in your new project.
 
 ```bash
