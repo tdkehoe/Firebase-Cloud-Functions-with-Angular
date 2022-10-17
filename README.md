@@ -109,13 +109,13 @@ Initialize the Firestore database:
 firebase init firestore
 ```
 
-You'll get a warning:
+If you get a warning
 
 ```bash
 Error: It looks like you haven't used Cloud Firestore in this project before.
 ```
 
-Go to your Firebase console and click on `Firestore Database`. Open a new database.
+then go to your Firebase console and click on `Firestore Database`. Open a new database.
 
 ## Initialize Functions
 
@@ -267,10 +267,6 @@ You can comment out the Angular 7 lines now.
 
 We have two lines for the emulator. When you're ready to run in the cloud comment out these two lines.
 
-## Inject `AngularFireFunctions` into Component Controller
-
-Open `/src/app/app.component.ts` and import one AngularFire module.
-
 ## Make the HTML view
 
 Open `app.component.html`. Replace the placeholder view with:
@@ -404,6 +400,36 @@ In the emulator logs, you should see the logs:
 ```
 
 You should see the same logs in the terminal emulator tab.
+
+## TypeScript errors
+
+If you chose to use TypeScript you may see some errors. The issue is the data type of the parameters in your functions:
+
+```ts
+exports.callMe = functions.https.onCall((data, context) => {}
+```
+
+This will throw any error `Parameter 'data' implicitly has an 'any' type.` This is because TypeScript is running in `strict` mode by default.
+
+```ts
+exports.callMe = functions.https.onCall((data: any, context: any) => {}
+```
+
+This will throw this error:
+
+```
+SyntaxError: Unexpected token ':'
+```
+
+The latter appears to be an issue with the transpiler. The transpiler apparently failed to remove the types when it transpiled TypeScript into JavaScript.
+
+Both errors can be ignored. You can get rid of the former error by opening `functions/tsconfig.json` and either change `strict` to `false` or to add this line:
+
+```js
+"noImplicitAny": false,
+```
+
+It doesn't seem to matter if you set this to `true` or `false`.
 
 ## Calling functions via HTTP requests
 
