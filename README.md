@@ -452,6 +452,18 @@ It doesn't seem to matter if you set this to `true` or `false`.
 ## Deploy to Firebase
 
 
+```bash
+ firebase deploy --only functions
+ ```
+ 
+ In `src/environments.ts` change `useEmulators` to `false`:
+ 
+ ```js
+ useEmulators: false
+ ```
+ 
+Check the logs in your Firebase Console to see if your functions run.
+ 
 ## Calling functions via HTTP requests
 
 Firebase cloud functions can also be [called via HTTP requests](https://firebase.google.com/docs/functions/http-events?hl=en&authuser=0). This is useful for Express apps but not for Angular apps.
@@ -460,6 +472,71 @@ Firebase cloud functions can also be [called via HTTP requests](https://firebase
 
 You can trigger a Firebase Cloud Function by writing data to Firestore. This doesn't use AngularFire for functions, i.e., only uses AngularFire for Firestore, so it doesn't matter whether you use AngularFire 6 or 7 for functions.
 
+Make a new cloud function:
 
+```ts
+exports.makeUppercase = functions.firestore.document('/triggers/upperCASE')
+.onCreate((snap, context) => {
+  const original = snap.data().original;
+  console.log('Uppercasing', context.params.documentId, original);
+  const uppercase = original.toUpperCase();
+  return snap.ref.set({uppercase}, {merge: true});
+});
+```
 
+This will trigger you write data to the document `upperCASE` in the collection `triggers`. The function receives a string and returns the string in UPPERCASE.
+
+Add a form field to the HTML view:
+
+```html
+<div>
+    <button mat-raised-button color="basic" (click)='callMe()'>Call me!</button>
+</div>
+
+{{ data$ | async }}
+
+<form (ngSubmit)="upperCaseMe()">
+    <input type="text" [(ngModel)]="message" name="message" placeholder="Message" required>
+    <button type="submit" value="Submit">Submit</button>
+</form>
+```
+
+In `app.module.ts` import Angular Forms:
+
+```js
+import { FormsModule } from '@angular/forms';
+...
+  imports: [
+    BrowserModule,
+    FormsModule,
+    ...
+    ]
+```
+
+Add the handler function to `app.component.ts`
+
+```ts
+  async upperCaseMe() {
+    console.log(this.message);
+      try {
+        const docRef = await addDoc(collection(this.firestore, 'triggers'), {
+          message: this.message,
+        });
+        console.log(docRef);
+        this.message = null;
+      } catch (error) {
+        console.error(error);
+      }
+  }
+```
+
+Deploy to Firebase:
+
+```bash
+firebase deploy --only functions
+```
+
+### Switch from AngularFire 6 to 7
+
+Functions and the emulator run in AngularFire 6. Firestore runs in AngularFire 7. You can't mix AngularFire 6 and 7. Comment out the AngularFire 6 code and comment in the AngularFire 7 code. You don't AngularFire Functions to trigger cloud functions (only for callable functions). 
 
