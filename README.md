@@ -166,6 +166,26 @@ npm run build
 
 The latter command might ask you to update Java on your computer. 
 
+In `src/environments.ts` add a property:
+
+```ts
+export const environment = {
+  firebase: {
+    projectId: '...,
+    appId: '...,
+    storageBucket: '...',
+    locationId: 'us-central',
+    apiKey: '...',
+    authDomain: '...',
+    messagingSenderId: '...',
+  },
+  production: false,
+  useEmulators: true
+};
+```
+
+Change `useEmulators` to `false` when you deploy to the cloud.
+
 ## Directory structure
 Look at your directory and you should see, if you chose TypeScript:
 
@@ -237,7 +257,7 @@ import { environment } from '../environments/environment';
 // AngularFire 6
 import { AngularFireModule } from '@angular/fire/compat';
 import { AngularFireFunctionsModule } from '@angular/fire/compat/functions';
-import { USE_EMULATOR } from '@angular/fire/compat/functions'; // comment out to run in the cloud
+import { USE_EMULATOR as USE_EMULATOR_FUNCTIONS } from '@angular/fire/compat/functions'; // comment out to run in the cloud
 
 @NgModule({
   declarations: [
@@ -256,7 +276,7 @@ import { USE_EMULATOR } from '@angular/fire/compat/functions'; // comment out to
     AngularFireFunctionsModule
   ],
   providers: [
-    { provide: USE_EMULATOR, useValue: ['localhost', 5001] } // comment out to run in the cloud
+        { provide: USE_EMULATOR_FUNCTIONS, useValue: environment.useEmulators ? ['localhost', 5001] : undefined }
   ],
   bootstrap: [AppComponent]
 })
@@ -264,8 +284,6 @@ export class AppModule { }
 ```
 
 You can comment out the Angular 7 lines now. 
-
-We have two lines for the emulator. When you're ready to run in the cloud comment out these two lines.
 
 ## Make the HTML view
 
@@ -430,6 +448,9 @@ Both errors can be ignored. You can get rid of the former error by opening `func
 ```
 
 It doesn't seem to matter if you set this to `true` or `false`.
+
+## Deploy to Firebase
+
 
 ## Calling functions via HTTP requests
 
