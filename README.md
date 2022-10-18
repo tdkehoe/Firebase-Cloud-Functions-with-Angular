@@ -1,4 +1,4 @@
-# Using Firebase Cloud Functions with Angular and AmgularFire
+# Using Firebase Cloud Functions with Angular and AngularFire
 
 This tutorial will make a simple Angular app that connects to Firebase Cloud Functions.
 
