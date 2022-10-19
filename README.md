@@ -4,7 +4,7 @@ This tutorial will make a simple Angular app that connects to Firebase Cloud Fun
 
 This project uses Angular 14, AngularFire 6, and Firestore Web version 9 (modular). Why this tutorial doesn't use AngularFire 7 will be explained below.
 
-I assume that you know the basics of Angular (nothing advanced is required). No CSS or styling is used, to make the code easier to understand.
+I assume that you know the basics of Angular (nothing advanced is required). No CSS or other styling is used, to make the code easier to understand.
 
 ## Create a new project
 
