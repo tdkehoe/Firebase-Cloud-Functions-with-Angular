@@ -257,7 +257,7 @@ import { environment } from '../environments/environment';
 // AngularFire 6
 import { AngularFireModule } from '@angular/fire/compat';
 import { AngularFireFunctionsModule } from '@angular/fire/compat/functions';
-import { USE_EMULATOR as USE_EMULATOR_FUNCTIONS } from '@angular/fire/compat/functions'; // comment out to run in the cloud
+import { USE_EMULATOR as USE_FUNCTIONS_EMULATOR } from '@angular/fire/compat/functions'; // comment out to run in the cloud
 
 @NgModule({
   declarations: [
@@ -276,7 +276,7 @@ import { USE_EMULATOR as USE_EMULATOR_FUNCTIONS } from '@angular/fire/compat/fun
     AngularFireFunctionsModule
   ],
   providers: [
-        { provide: USE_EMULATOR_FUNCTIONS, useValue: environment.useEmulators ? ['localhost', 5001] : undefined }
+        { provide: USE_FUNCTIONS_EMULATOR, useValue: environment.useEmulators ? ['localhost', 5001] : undefined }
   ],
   bootstrap: [AppComponent]
 })
