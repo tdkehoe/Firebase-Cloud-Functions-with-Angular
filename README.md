@@ -1,4 +1,4 @@
-# Using Firebase Callable Cloud Functions with Angular and AngularFire
+# Using Firebase Callable Cloud Functions with Angular and AngularFire 6
 
 This tutorial will make a simple Angular app that connects to Firebase Cloud Functions.
 
